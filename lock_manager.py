@@ -141,20 +141,11 @@ def wake_display():
         ], check=True, capture_output=True, timeout=2)
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired, FileNotFoundError):
         pass
-    try:
-        subprocess.run([
-            "osascript",
-            "-e",
-            'tell application "System Events" to keystroke " "'
-        ], check=True, capture_output=True, timeout=2)
-    except (subprocess.CalledProcessError, subprocess.TimeoutExpired, FileNotFoundError):
-        pass
 
 def unlock_mac_screen():
     screen_was_locked = is_screen_locked()
     
     wake_display()
-    time.sleep(2.0) # maybe change to lower value (1.5?)
     
     # verify screen is locked (after waking)
     if not is_screen_locked():
@@ -177,12 +168,18 @@ def unlock_mac_screen():
         return False
     
     try:
+        
         escaped_password = password.replace('\\', '\\\\').replace('"', '\\"')
         
         script = f'''
         tell application "System Events"
+            delay 0.8
+            repeat 15 times
+                key code 51
+            end repeat
+            delay 0.2
             keystroke "{escaped_password}"
-            delay 0.1
+            delay 0.2
             key code 36
         end tell
         '''
@@ -191,7 +188,7 @@ def unlock_mac_screen():
             "osascript",
             "-e",
             script
-        ], check=True, capture_output=True, timeout=2)
+        ], check=True, capture_output=True, timeout=5)
 
         return True
     except subprocess.CalledProcessError as e:
