@@ -1,8 +1,5 @@
 # Proxi-Lock
 
-[![CI](https://github.com/yourusername/proxi-lock/workflows/CI/badge.svg)](https://github.com/yourusername/proxi-lock/actions)
-[![Releases](https://img.shields.io/github/release/yourusername/proxi-lock.svg)](https://github.com/yourusername/proxi-lock/releases)
-
 Proxi-Lock is a small menu bar utility that locks and unlocks your Mac by proximity of your iPhone, Apple Watch, or any other Bluetooth Low Energy device.
 
 **Please note:** This app is not distributed on the Mac App Store. You can find it here for free!
@@ -129,12 +126,6 @@ This command will ask your login password.
 
 3. Check for interference from other Bluetooth devices or 2.4GHz WiFi.
 
-### My Bluetooth keyboard, mouse, or other Bluetooth devices stopped working
-
-1. First, try resetting the Bluetooth module as described above.
-
-2. If the problem persists, you may need to restart your Mac or disconnect and reconnect your Bluetooth devices.
-
 ## Notes on MAC Address
 
 Unlike classic Bluetooth, Bluetooth Low Energy devices can use private MAC addresses. That private address can be random and can be changed from time to time.
@@ -155,14 +146,6 @@ To check if the MAC address is resolved correctly, compare the MAC address displ
 - **IMPORTANT:** Proxi-Lock **only unlocks if the screen was locked by Proxi-Lock itself** (not if you manually locked it). This is a security feature to prevent unauthorized unlocking. If you manually lock your Mac (e.g., using Cmd+Ctrl+Q or the Apple menu), Proxi-Lock will not automatically unlock it - you must unlock it manually.
 - The app requires Accessibility permissions to unlock the screen, which is a standard requirement for automation tools
 - Always keep your Mac and Proxi-Lock updated to the latest version
-
-## Funding
-
-If you like this app, I'd appreciate it if you could make a donation via [Buy Me a Coffee](https://www.buymeacoffee.com/yourusername) or [PayPal](https://paypal.me/yourusername) so I can keep up with development and maintenance.
-
-## License
-
-[Add your license here]
 
 ## Credits
 
