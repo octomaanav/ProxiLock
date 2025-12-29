@@ -126,11 +126,6 @@ This command will ask your login password.
 
 3. Check for interference from other Bluetooth devices or 2.4GHz WiFi.
 
-### My Bluetooth keyboard, mouse, or other Bluetooth devices stopped working
-
-1. First, try resetting the Bluetooth module as described above.
-
-2. If the problem persists, you may need to restart your Mac or disconnect and reconnect your Bluetooth devices.
 
 ## Notes on MAC Address
 
