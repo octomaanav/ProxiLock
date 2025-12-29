@@ -2,53 +2,55 @@
 import time
 from enum import Enum
 from lock_manager import is_screen_locked
+from sleep_watcher import get_time_since_wake
 
 class LockOwner(Enum):
     SCRIPT = "script"
     USER = "user"
     NONE = "none"
 
-# Global state
 lock_owner = LockOwner.NONE
 script_lock_time = 0
-SCRIPT_GRACE = 2.0  # Grace window to avoid race conditions
+last_unlocked_time = 0
+WAKE_GRACE_PERIOD = 10.0
+last_lock_state = None
 
 def mark_script_lock():
-    """Mark that script initiated the lock - ONLY this function may mark SCRIPT"""
     global lock_owner, script_lock_time
     
     lock_owner = LockOwner.SCRIPT
     script_lock_time = time.time()
-    print("   Lock owner: SCRIPT")
 
 def update_lock_state():
-    """Detect manual lock - THIS is what detects USER locks"""
-    global lock_owner, script_lock_time
-    
+    global lock_owner, last_unlocked_time, last_lock_state
+
     locked = is_screen_locked()
-    
-    # Grace window: if script just locked it recently, preserve SCRIPT ownership
-    # even if is_screen_locked() hasn't detected it yet (race condition protection)
-    if lock_owner == LockOwner.SCRIPT:
-        if time.time() - script_lock_time < SCRIPT_GRACE:
-            # Within grace window - keep SCRIPT ownership regardless of current lock state
-            # (screen might not be detected as locked yet due to timing)
-            return
-    
-    # If screen is locked but script didn't just lock it → USER
-    if locked and lock_owner != LockOwner.SCRIPT:
-        lock_owner = LockOwner.USER
-    
-    # If screen is unlocked → reset (but only if not in grace window)
-    if not locked:
+    now = time.time()
+    time_since_wake = get_time_since_wake()
+
+    if last_lock_state is None:
+        last_lock_state = locked
+        return
+
+    if last_lock_state is True and locked is False:
+        last_unlocked_time = now
         lock_owner = LockOwner.NONE
 
+    elif last_lock_state is False and locked is True:
+        if time_since_wake < WAKE_GRACE_PERIOD:
+            if lock_owner != LockOwner.SCRIPT:
+                pass
+        elif lock_owner != LockOwner.SCRIPT:
+            lock_owner = LockOwner.USER
+
+    last_lock_state = locked
+
+
 def get_lock_owner():
-    """Get current lock owner"""
     return lock_owner
 
 def reset_lock_owner():
-    """Reset lock owner (after unlock)"""
-    global lock_owner
+    global lock_owner, last_unlocked_time
     lock_owner = LockOwner.NONE
+    last_unlocked_time = time.time()
 
