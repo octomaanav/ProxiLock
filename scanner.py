@@ -16,13 +16,19 @@ class ProximityScanner:
         self.consecutive_far_count = 0
 
     def _detection_callback(self, device, advertisement_data):
+        target_address = self.config.target_address
         target_name = self.config.target_name
-        if not target_name:
+        
+        if not target_address and not target_name:
             return
         
-        device_name = device.name or ""
-        if device_name != target_name:
-            return
+        if target_address:
+            if device.address != target_address:
+                return
+        else:
+            device_name = device.name or ""
+            if device_name != target_name:
+                return
 
         rssi = advertisement_data.rssi
         proximity = self.controller.get_proximity(rssi)
@@ -43,8 +49,9 @@ class ProximityScanner:
         self.last_proximity = proximity
     
     async def start(self):
+        target_address = self.config.target_address
         target_name = self.config.target_name
-        if not target_name:
+        if not target_address and not target_name:
             return
         self.scanner = BleakScanner(self._detection_callback)
         await self.scanner.start()

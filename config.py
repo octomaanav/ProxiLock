@@ -9,6 +9,7 @@ class ProxiLockConfig:
     
     _DEFAULTS = {
         "target_name": None,
+        "target_address": None,
         "rssi_near": -30,
         "rssi_far": -70,
         "max_unlocking_rssi": -50,
@@ -89,6 +90,17 @@ class ProxiLockConfig:
     def target_name(self, value):
         with self._lock:
             self._data["target_name"] = value
+            self._save()
+    
+    @property
+    def target_address(self):
+        with self._lock:
+            return self._data.get("target_address")
+    
+    @target_address.setter
+    def target_address(self, value):
+        with self._lock:
+            self._data["target_address"] = value
             self._save()
     
     @property

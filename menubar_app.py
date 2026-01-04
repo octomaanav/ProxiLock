@@ -69,7 +69,10 @@ class ProxiLockMenuBar(rumps.App):
         asyncio.run(self.scan_loop())
 
     async def scan_loop(self):
+        last_detection_time_ref = {"time": time.time()}
+        
         def on_detect(device, adv):
+            last_detection_time_ref["time"] = time.time()
             with self.lock:
                 self.devices[device.address] = {
                     "address": device.address,
@@ -78,11 +81,38 @@ class ProxiLockMenuBar(rumps.App):
                     "last_seen": time.time()
                 }
 
-        scanner = BleakScanner(on_detect)
-        await scanner.start()
-
+        scanner = None
+        
         while True:
-            await asyncio.sleep(1)
+            try:
+                if scanner is None:
+                    scanner = BleakScanner(on_detect)
+                    await scanner.start()
+                    print("BLE scanner started")
+                    last_detection_time_ref["time"] = time.time()
+                
+                current_time = time.time()
+                if current_time - last_detection_time_ref["time"] > 30:
+                    print("No devices detected for 30s, restarting scanner...")
+                    try:
+                        await scanner.stop()
+                    except:
+                        pass
+                    scanner = None
+                    await asyncio.sleep(1)
+                    continue
+                
+                await asyncio.sleep(1)
+                
+            except Exception as e:
+                print(f"BLE scanner error: {e}")
+                if scanner:
+                    try:
+                        await scanner.stop()
+                    except:
+                        pass
+                    scanner = None
+                await asyncio.sleep(2)
 
     def update_menu(self, _):
         self.devices_menu.clear()
@@ -91,7 +121,7 @@ class ProxiLockMenuBar(rumps.App):
         with self.lock:
             devices = [
                 d for d in self.devices.values()
-                if now - d["last_seen"] < 5
+                if now - d["last_seen"] < 10
             ]
 
         if not devices:
@@ -99,12 +129,22 @@ class ProxiLockMenuBar(rumps.App):
             return
 
         for d in sorted(devices, key=lambda x: x["rssi"], reverse=True):
-            label = f'{d["name"]} ({d["rssi"]} dBm)'
-            if d["name"] == self.config.target_name:
+            if d["name"] and d["name"] != d["address"]:
+                device_display = d["name"]
+            else:
+                short_addr = d["address"].replace(":", "")[-8:].upper()
+                device_display = f"Device {short_addr}"
+            
+            rssi_str = f"+{d['rssi']}" if d['rssi'] >= 0 else str(d['rssi'])
+            label = f'{device_display} ({rssi_str} dBm)'
+            
+            is_selected = (d["address"] == self.config.target_address) or (d["name"] == self.config.target_name and not self.config.target_address)
+            if is_selected:
                 label = "✓ " + label
 
             item = rumps.MenuItem(label, callback=self.on_device_clicked)
             item.device_address = d["address"]
+            item.device_name = d["name"]
             self.devices_menu.add(item)
 
     def on_device_clicked(self, sender):
@@ -116,11 +156,12 @@ class ProxiLockMenuBar(rumps.App):
             d = self.devices.get(addr)
 
         if d:
-            self.config.target_name = d['name']
+            self.config.target_address = d['address']
+            device_display = d['name'] if d['name'] and d['name'] != d['address'] else d['address'][:17]
             rumps.notification(
                 "Proxi-Lock",
                 "Device Selected",
-                f"Now monitoring: {d['name']}"
+                f"Now monitoring: {device_display}"
             )
 
     def _build_rssi_menu(self, parent_menu, threshold_type):
@@ -370,7 +411,7 @@ class ProxiLockMenuBar(rumps.App):
             self.start_monitoring()
 
     def start_monitoring(self):
-        if not self.config.target_name:
+        if not self.config.target_address and not self.config.target_name:
             show_alert(
                 "No Device Selected",
                 "Please select a device from the Devices menu first."
@@ -379,10 +420,11 @@ class ProxiLockMenuBar(rumps.App):
         
         start_monitoring()
         self.monitoring_item.title = "Stop Monitoring"
+        target_display = self.config.target_name if self.config.target_name else (self.config.target_address[:17] if self.config.target_address else "Unknown")
         rumps.notification(
             "Proxi-Lock",
             "Monitoring Started",
-            f"Monitoring device: {self.config.target_name}"
+            f"Monitoring device: {target_display}"
         )
 
     def stop_monitoring(self):
