@@ -26,7 +26,7 @@ Proxi-Lock is a small menu bar utility that locks and unlocks your Mac by proxim
 
 ### Manual Installation
 
-1. Download the latest release from the [Releases](https://github.com/yourusername/proxi-lock/releases) page
+1. Download the latest release from the [Releases](https://github.com/octomaanav/ProxiLock/releases) page
 2. Unzip the downloaded file
 3. Move `Proxi-Lock.app` to your Applications folder
 4. Open the app (you may need to right-click and select "Open" the first time due to macOS security)
