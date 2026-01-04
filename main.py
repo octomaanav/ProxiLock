@@ -47,18 +47,18 @@ def proximity_callback(proximity, rssi, consecutive_far_count):
             config = get_config()
             if config.lock_only_mode:
                 print("Lock-only mode enabled — skipping unlock")
-                return
+        return
             
-            if last_proximity != "NEAR":
-                lock_owner = get_lock_owner()
-                if lock_owner == LockOwner.SCRIPT:
-                    print(f"Unlocking (script-owned lock)")
-                    unlock_mac_screen()
-                    reset_lock_owner()
-                elif lock_owner == LockOwner.USER:
-                    print("Locked by user — unlock blocked")
-                else:
-                    print("Screen already unlocked (skipping unlock)")
+        if last_proximity != "NEAR":
+            lock_owner = get_lock_owner()
+            if lock_owner == LockOwner.SCRIPT:
+                print(f"Unlocking (script-owned lock)")
+                unlock_mac_screen()
+                reset_lock_owner()
+            elif lock_owner == LockOwner.USER:
+                print("Locked by user — unlock blocked")
+            else:
+                print("Screen already unlocked (skipping unlock)")
     
     last_proximity = proximity
 

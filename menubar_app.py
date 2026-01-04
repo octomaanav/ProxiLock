@@ -82,7 +82,7 @@ class ProxiLockMenuBar(rumps.App):
                 }
 
         scanner = None
-        
+
         while True:
             try:
                 if scanner is None:
@@ -101,9 +101,8 @@ class ProxiLockMenuBar(rumps.App):
                     scanner = None
                     await asyncio.sleep(1)
                     continue
-                
                 await asyncio.sleep(1)
-                
+
             except Exception as e:
                 print(f"BLE scanner error: {e}")
                 if scanner:
